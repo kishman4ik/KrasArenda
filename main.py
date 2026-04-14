@@ -23,7 +23,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 @dataclass
 class Config:
     bot_token: str = os.getenv("BOT_TOKEN", "PASTE_YOUR_BOT_TOKEN_HERE")
-    admin_id: int = int(os.getenv("ADMIN_ID", "172433210"))
+    admin_id: int = int((os.getenv("ADMIN_ID") or os.getenv("admin_id") or "172433210").strip())
+    second_admin_id: int = int((os.getenv("SECOND_ADMIN_ID") or "0").strip())
 
 
 config = Config()
@@ -524,7 +525,12 @@ async def issue_description_received(message: Message, state: FSMContext, bot: B
         f"<b>Описание:</b>\n{escape_multiline(message.text)}"
     )
 
-    await bot.send_message(chat_id=config.admin_id, text=admin_text)
+    admin_targets = [config.admin_id]
+    if config.second_admin_id > 0 and config.second_admin_id not in admin_targets:
+        admin_targets.append(config.second_admin_id)
+
+    for admin_chat_id in admin_targets:
+        await bot.send_message(chat_id=admin_chat_id, text=admin_text)
 
     kb = InlineKeyboardBuilder()
     if apartment_id is not None:
