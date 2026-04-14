@@ -525,12 +525,10 @@ async def issue_description_received(message: Message, state: FSMContext, bot: B
         f"<b>Описание:</b>\n{escape_multiline(message.text)}"
     )
 
-    admin_targets = [config.admin_id]
-    if config.second_admin_id > 0 and config.second_admin_id not in admin_targets:
-        admin_targets.append(config.second_admin_id)
+    await bot.send_message(chat_id=config.admin_id, text=admin_text)
 
-    for admin_chat_id in admin_targets:
-        await bot.send_message(chat_id=admin_chat_id, text=admin_text)
+    if config.second_admin_id > 0 and config.second_admin_id != config.admin_id:
+        await bot.send_message(chat_id=config.second_admin_id, text=admin_text)
 
     kb = InlineKeyboardBuilder()
     if apartment_id is not None:
